@@ -39,8 +39,13 @@ class MenuScene extends Phaser.Scene {
     // Goal flag decoration
     this.add.image(820, GAME_HEIGHT - 80, 'flag').setOrigin(0.5, 1).setScale(1.2);
 
+    const hasTouch = this.sys.game.device.input.touch ||
+                     ('ontouchstart' in window) ||
+                     (navigator.maxTouchPoints > 0);
+
     // Blinking start text
-    const startTxt = this.add.text(GAME_WIDTH / 2, 390, 'Pressione ESPAÇO para jogar', {
+    const startTxt = this.add.text(GAME_WIDTH / 2, 390,
+      hasTouch ? 'Toque para jogar' : 'Pressione ESPAÇO para jogar', {
       fontSize: '24px', fontFamily: 'Arial Black', color: '#FFFFFF',
       stroke: '#002776', strokeThickness: 4
     }).setOrigin(0.5);
@@ -48,7 +53,9 @@ class MenuScene extends Phaser.Scene {
 
     // Controls hint
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 30,
-      '← → Mover   |   ↑ Pular   |   ESPAÇO Chutar   |   ↑+ESPAÇO Chute Alto   |   ↓+ESPAÇO Chute Rasteiro',
+      hasTouch
+        ? 'Use os botões na tela: ◀ ▶ mover  |  PULO  |  CHUTE / ALTO / RASTEIRO'
+        : '← → Mover   |   ↑ Pular   |   ESPAÇO Chutar   |   ↑+ESPAÇO Chute Alto   |   ↓+ESPAÇO Chute Rasteiro',
       { fontSize: '13px', fontFamily: 'Arial', color: '#CCCCCC', stroke: '#000', strokeThickness: 2 }
     ).setOrigin(0.5);
 

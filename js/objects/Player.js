@@ -22,21 +22,21 @@ class Player {
     });
   }
 
-  update(cursors) {
+  update(input) {
     const body = this.sprite.body;
     const onGround = body.blocked.down;
 
-    if (cursors.left.isDown) {
+    if (input.left) {
       body.setVelocityX(-this.WALK);
       this.facing = -1;
       this.sprite.setFlipX(true);
-    } else if (cursors.right.isDown) {
+    } else if (input.right) {
       body.setVelocityX(this.WALK);
       this.facing = 1;
       this.sprite.setFlipX(false);
     }
 
-    if (Phaser.Input.Keyboard.JustDown(cursors.up) && onGround) {
+    if (input.jump && onGround) {
       body.setVelocityY(this.JUMP);
     }
 
@@ -51,7 +51,7 @@ class Player {
     }
   }
 
-  tryKick(ball, cursors) {
+  tryKick(ball, mods) {
     const now = this.scene.time.now;
     if (now - this._lastKick < this.CD) return false;
     if (!this.isNearBall(ball)) return false;
@@ -61,13 +61,13 @@ class Player {
     this.sprite.setTexture('player_kick');
     this.scene.time.delayedCall(200, () => { this.isKicking = false; });
 
-    const up   = cursors.up.isDown;
-    const down = cursors.down && cursors.down.isDown;
+    const high = mods && mods.high;
+    const low  = mods && mods.low;
     const run  = Math.sign(this.sprite.body.velocity.x) === this.facing;
 
     let vx = this.facing * 560, vy = -340;
-    if (up)   { vx = this.facing * 280; vy = -700; }
-    if (down) { vx = this.facing * 780; vy =  -60; }
+    if (high) { vx = this.facing * 280; vy = -700; }
+    if (low)  { vx = this.facing * 780; vy =  -60; }
     if (run)  { vx *= 1.25; }
 
     ball.applyKick(vx, vy);
