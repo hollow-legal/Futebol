@@ -39,4 +39,4 @@ const config = {
   scene: [BootScene, MenuScene, GameScene, GameOverScene]
 };
 
-new Phaser.Game(config);
+window.GAME = new Phaser.Game(config);

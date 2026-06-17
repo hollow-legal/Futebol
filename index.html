@@ -2,23 +2,55 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Bola na Rua</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       background: #0a0f1e;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
       overflow: hidden;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
     canvas { display: block; }
+
+    /* Aviso para virar o celular em retrato (apenas telas touch estreitas) */
+    #rotate {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #002776;
+      color: #FFDF00;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      z-index: 9999;
+      padding: 24px;
+    }
+    #rotate .ico { font-size: 64px; margin-bottom: 16px; animation: spin 1.6s ease-in-out infinite; }
+    #rotate h1 { font-size: 26px; margin-bottom: 8px; }
+    #rotate p { font-size: 16px; color: #fff; }
+    @keyframes spin { 0%,100% { transform: rotate(-15deg); } 50% { transform: rotate(75deg); } }
+    @media (hover: none) and (orientation: portrait) {
+      #rotate { display: flex; }
+    }
   </style>
 </head>
 <body>
+  <div id="rotate">
+    <div class="ico">📱↔️</div>
+    <h1>Vire o celular</h1>
+    <p>Jogue na horizontal para a melhor experiência</p>
+  </div>
   <script src="phaser.min.js"></script>
+  <script src="js/objects/TouchControls.js"></script>
   <script src="js/objects/Player.js"></script>
   <script src="js/objects/Ball.js"></script>
   <script src="js/scenes/BootScene.js"></script>

@@ -25,6 +25,13 @@ class GameScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.kickKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+    // Touch controls (mobile only) — allow simultaneous touches
+    this.input.addPointer(3);
+    const hasTouch = this.sys.game.device.input.touch ||
+                     ('ontouchstart' in window) ||
+                     (navigator.maxTouchPoints > 0);
+    this.touch = hasTouch ? new TouchControls(this) : null;
+
     this.timeLeft = 90;
     this.timerEv  = this.time.addEvent({
       delay: 1000, loop: true,
@@ -242,13 +249,18 @@ class GameScene extends Phaser.Scene {
       fontSize:'13px', fontFamily:'Arial', color:'#fff', stroke:'#000', strokeThickness:2
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(100);
 
-    // controls hint (fades after 6s)
-    const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 28,
-      'ESPAÇO = Chutar  |  ↑+ESPAÇO = Chute Alto  |  ↓+ESPAÇO = Rasteiro',
-      { fontSize:'13px', fontFamily:'Arial', color:'#ddd', stroke:'#000', strokeThickness:2 }
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(100);
-    this.time.delayedCall(5500, () =>
-      this.tweens.add({ targets: hint, alpha: 0, duration: 1200 }));
+    // controls hint (fades after 6s) — desktop only; on touch the buttons explain themselves
+    const hasTouch = this.sys.game.device.input.touch ||
+                     ('ontouchstart' in window) ||
+                     (navigator.maxTouchPoints > 0);
+    if (!hasTouch) {
+      const hint = this.add.text(GAME_WIDTH / 2, 56,
+        'ESPAÇO = Chutar  |  ↑+ESPAÇO = Chute Alto  |  ↓+ESPAÇO = Rasteiro',
+        { fontSize:'13px', fontFamily:'Arial', color:'#ddd', stroke:'#000', strokeThickness:2 }
+      ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(100);
+      this.time.delayedCall(5500, () =>
+        this.tweens.add({ targets: hint, alpha: 0, duration: 1200 }));
+    }
 
     this.flashTxt = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50, 'CHEGOU!', {
       fontSize:'80px', fontFamily:'Arial Black',
@@ -266,13 +278,26 @@ class GameScene extends Phaser.Scene {
   update(time, delta) {
     if (this.state !== 'play') return;
 
-    this.player.update(this.cursors);
+    // Unified input (keyboard OR touch)
+    const k = this.cursors, t = this.touch ? this.touch.state : null;
+    const left  = k.left.isDown  || (t && t.left);
+    const right = k.right.isDown || (t && t.right);
+    const jump  = Phaser.Input.Keyboard.JustDown(k.up) ||
+                  (this.touch && this.touch.consumeJump());
+    this.player.update({ left, right, jump });
 
+    // Kick: keyboard (SPACE + held ↑/↓) or touch (one-shot per button)
+    let doKick = false, high = false, low = false;
     if (Phaser.Input.Keyboard.JustDown(this.kickKey)) {
-      if (this.player.tryKick(this.ball, this.cursors)) {
-        this.kickCount++;
-        this.score += 10;
-      }
+      doKick = true; high = k.up.isDown; low = k.down.isDown;
+    }
+    if (this.touch) {
+      const kc = this.touch.consumeKick();
+      if (kc) { doKick = true; high = kc.high; low = kc.low; }
+    }
+    if (doKick && this.player.tryKick(this.ball, { high, low })) {
+      this.kickCount++;
+      this.score += 10;
     }
 
     this.ball.update(delta);

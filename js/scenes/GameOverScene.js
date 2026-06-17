@@ -51,8 +51,11 @@ class GameOverScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Prompt
+    const hasTouch = this.sys.game.device.input.touch ||
+                     ('ontouchstart' in window) ||
+                     (navigator.maxTouchPoints > 0);
     const p = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 38,
-      'ESPAÇO — Jogar de Novo   |   ESC — Menu', {
+      hasTouch ? 'Toque para Jogar de Novo' : 'ESPAÇO — Jogar de Novo   |   ESC — Menu', {
         fontSize: '18px', fontFamily: 'Arial',
         color: '#CCCCCC', stroke: '#000', strokeThickness: 2
       }).setOrigin(0.5);
